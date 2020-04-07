@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.1.xsd">
+
+    <!-- 包扫描 -->
+    <!--<context:component-scan base-package="com.nzp" use-default-filters="false" >-->
+        <!--<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />-->
+    <!--</context:component-scan>-->
+    <context:component-scan base-package="com.controller"/>
+
+
+    <!-- 静态资源交给默认servlet处理
+         Spring MVC上下文中定义一个org.springframework.web.servlet.resource.DefaultServletHttpRequestHandler，
+         它会像一个检查员，对进入DispatcherServlet的URL进行筛查，
+         如果发现是静态资源的请求，就将该请求转由Web应用服务器默认的Servlet处理，
+         如果不是静态资源的请求，才由DispatcherServlet继续处理。
+     -->
+    <mvc:default-servlet-handler/>
+    <mvc:resources mapping="/css/**" location="/css/" />
+    <mvc:resources mapping="/img/**" location="/img/" />
+    <mvc:resources mapping="/js/**" location="/js/" />
+    <mvc:resources mapping="/plugins/**" location="/plugins/" />
+
+    <!-- 启用注解 -->
+  <!--  <mvc:annotation-driven />-->
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>application/json;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <mvc:interceptors>
+        <!-- 多个拦截器，顺序执行 -->
+        <!-- 配置登陆拦截器 -->
+        <mvc:interceptor>
+            <mvc:mapping path="/user/findAllUser"/>
+            <mvc:mapping path="/message/findAllMessage"/>
+            <mvc:mapping path="/rentget/findAllRentget"/>
+            <mvc:mapping path="/rentout/findAllRentOut"/>
+            <mvc:mapping path="/owner/findAllOwner"/>
+            <mvc:mapping path="/owner/pushRequestOwner"/>
+            <mvc:mapping path="/main/toShowPushRent"/>
+            <mvc:mapping path="/main/toShowUserInfo"/>
+            <mvc:mapping path="/userFind/toShowUserCenter/*"/>
+            <mvc:mapping path="/main/toShowPwdVerify"/>
+            <mvc:mapping path="/main/toShowPwdVerifyNext"/>
+            <mvc:exclude-mapping path="/main/toIndex" />
+            <mvc:exclude-mapping path="/userFind/findId/*" />
+            <mvc:exclude-mapping path="/userFind/findUserMessageById/*" />
+            <bean class="com.interceptor.LoginInterceptor"></bean>
+        </mvc:interceptor>
+
+    </mvc:interceptors>
+
+    <!-- 配置视图分发器 -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+          id="internalResourceViewResolver">
+        <!-- 前缀 -->
+        <property name="prefix" value="/WEB-INF/view/" />
+        <!-- 后缀 -->
+        <property name="suffix" value=".jsp" />
+    </bean>
+
+    <!-- 配置文件上传，如果没有使用文件上传可以不用配置，当然如果不配，那么配置文件中也不必引入上传组件包 -->
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- 默认编码 -->
+        <property name="defaultEncoding" value="UTF-8" />
+        <!-- 文件大小最大值 -->
+        <property name="maxUploadSize" value="10485760000" />
+        <!-- 内存中的最大值 -->
+        <property name="maxInMemorySize" value="40960" />
+    </bean>
+
+
+    <!-- springMVC与前台交互 -->
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+        <property name="messageConverters">
+            <list>
+                <ref bean="mappingJackson2HttpMessageConverter" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="mappingJackson2HttpMessageConverter"
+          class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+        <property name="supportedMediaTypes">
+            <list>
+                <value>text/html;charset=UTF-8</value>
+                <value>text/json;charset=UTF-8</value>
+                <value>application/json;charset=UTF-8</value>
+            </list>
+        </property>
+    </bean>
+
+</beans>
